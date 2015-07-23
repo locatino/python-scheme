@@ -33,6 +33,9 @@ def cons(atom, list):
     return list
 
 def null(l):
+    """The Law of Null
+    The primitve ``null`` is defined only for lists.
+    """
     if type(l) == _type_list:
         if len(l) > 0:
             return False
