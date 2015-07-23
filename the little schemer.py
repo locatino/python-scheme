@@ -9,6 +9,7 @@ def car(l):
             return l[0]
         else: raise TypeError("You cannot ask for the car of the empty list.")
     else: raise TypeError("You cannot ask for the car of the Non-List type.")
+    
 def cdr(l):
     """The Law of Cdr
     The primitive ``cdr`` is defined only for non-empty lists.
