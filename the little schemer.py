@@ -1,3 +1,6 @@
+import sys
+sys.setrecursionlimit(5000)
+
 _type_list = type([])
 _type_string = type("")
 _type_int = type(1)
@@ -11,6 +14,11 @@ def car(l):
             return l[0]
         else: raise TypeError("You cannot ask for the car of the empty list.")
     else: raise TypeError("You cannot ask for the car of the Non-List type.")
+
+def car():
+    return lambda l: l[0] if type(l) == _type_list and len(l) > 0 else (TypeError("You cannot ask for the car of the empty list.") if len(l) <= 0 else TypeError("You cannot ask for the car of the Non-List type."))
+car = car()
+
 
 def cdr(l):
     """The Law of Cdr
@@ -55,7 +63,7 @@ def eq(a, b):
     Each must be a non-numeric atom.
     """
     if not atom(a) or not atom(b):
-        raise TypeError("Both arguments must be non-numeric atoms.")
+        raise TypeError("Both arguments must be atoms.")
     return a == b
 
 """The First Commandment
@@ -63,7 +71,7 @@ def eq(a, b):
 Always ask ``null`` as first question in expressing any function.
 """
 
-def lat(l):
+def lat_normal(l):
     if null(l):
         return True
     elif atom(car(l)):
@@ -71,11 +79,16 @@ def lat(l):
     else:
         return False
 
+def lat():
+    return lambda l:True if null(l) else (lat(cdr(l)) if atom(car(l)) else False)
+lat = lat()
+
 def member(a, lat):
+    print(lat)
     if null(lat):
         return False
     else:
-        return eq(a, car(lat)) or member(a, cdr(lat))
+        return equal(a, car(lat)) or member(a, cdr(lat))
 
 """The Second Commandment
 Use ``cons`` to build lists.
@@ -94,6 +107,12 @@ def firsts(l):
         return []
     else:
         return cons(car(car(l)), firsts(cdr(l)))
+
+def seconds(l):
+    if null(l):
+        return l
+    else:
+        return cons(car(cdr(car(l))), seconds(cdr(l)))
 
 """The Third Commandment
 When building a list, describe the first typical element,
@@ -166,6 +185,12 @@ def mul(n, m):
     else:
         return add(n, mul(n, sub1(m)))
 
+def expt(n, m):
+    if zero(m):
+        return 1
+    else:
+        return mul(n, expt(n, sub1(m)))
+
 """The Fifth Commandment
 When building a value with ``add``,
 always use 0 for the value of the termination line,
@@ -208,7 +233,11 @@ def rempick(n, lat):
         return cons(car(lat), rempick(sub1(n), cdr(lat)))
 
 def number(n):
-    return type(n) == _type_int
+    try:
+        return type(n) == _type_int or type(int(n)) == _type_int
+    except:
+        return False
+
 
 def non_nums(lat):
     if null(lat):
@@ -305,3 +334,117 @@ def eqlist(l1, l2):
         return False
     else:
         return eqlist(car(l1), car(l2)) and eqlist(cdr(l1), cdr(l2))
+
+def equal(s1, s2):
+    if atom(s1) and atom(s2):
+        return eq(s1, s2)
+    if atom(s1) or atom(s2):
+        return False
+    else:
+        return eqlist(s1, s2)
+
+"""The Sixth Commandment
+Simplify only after the function is correct.
+"""
+
+def numbered(aexp):
+    if atom(aexp):
+        return number(aexp)
+    else:
+        return number(car(aexp)) and number(car(cdr(cdr(aexp))))
+
+"""The Seventh Commandment
+Recur on the subparts that are of the same nature:
+    ·On the sublists of a list.
+    ·On the subexpressions of an arithmetic expression.
+"""
+
+def value_(nexp):
+    if atom(nexp):
+        return nexp
+    elif eq(car(cdr(nexp)), "add"):
+        return add(value(car(nexp)), value(car(cdr(cdr(nexp)))))
+    elif eq(car(cdr(nexp)), "mul"):
+        return mul(value(car(nexp)), value(car(cdr(cdr(nexp)))))
+    else:
+        return expt(value(car(nexp)), value(car(cdr(cdr(nexp)))))
+
+def operator(aexp):
+    return car(aexp)
+
+def first_sub_exp(aexp):
+    return car(cdr(aexp))
+
+def second_sub_exp(aexp):
+    return car(cdr(cdr(aexp)))
+
+def value(nexp):
+    if atom(nexp):
+        return nexp
+    elif eq(operator(nexp), "add"):
+        return add(value(first_sub_exp(nexp)), value(second_sub_exp(nexp)))
+    elif eq(operator(nexp), "mul"):
+        return mul(value(first_sub_exp(nexp)), value(second_sub_exp(nexp)))
+    else:
+        return expt(value(first_sub_exp(nexp)), value(second_sub_exp(nexp)))
+
+#print(value(["add", 4,["mul",3,2]]))
+
+"""The Eighth Commandment
+Use help functions to abstract from representations.
+"""
+
+def set(lat):
+    if null(lat):
+        return True
+    elif member(car(lat), cdr(lat)):
+        return False
+    else:
+        return set(cdr(lat))
+
+def makeset(lat):
+    if null(lat):
+        return lat
+    elif member(car(lat), cdr(lat)):
+        return makeset(cdr(lat))
+    else:
+        return cons(car(lat), makeset(cdr(lat)))
+
+def first(l):
+    return car(l)
+
+def second(l):
+    return car(cdr(l))
+
+def build(s1, s2):
+    return cons(s1, cons(s2, []))
+
+def fun(lat):
+    return set(firsts(lat))
+
+def revrel(lat):
+    if null(lat):
+        return lat
+    else:
+        return cons(build(second(car(lat)), first(car(lat))), revrel(cdr(lat)))
+
+def fullfun(lat):
+    return set(seconds(lat))
+
+def one_to_one(lat):
+    return fun(revrel(lat))
+
+def rember_f_(test, a, l):
+    if null(l):
+        return l
+    elif test(a, car(l)):
+        return rember_f(test, a, cdr(l))
+    else:
+        return cons(car(l), rember_f(test, a, cdr(l)))
+
+def rember_f(test):
+    return lambda a, l:l if null(l) else (cdr(l) if test(car(l), a) else cons(car(l), rember_f(test)(a, cdr(l))))
+
+def rember_f():
+    return lambda test: lambda a, l:l if null(l) else (cdr(l) if test(car(l), a) else cons(car(l), rember_f(test)(a, cdr(l))))
+rember_f = rember_f()
