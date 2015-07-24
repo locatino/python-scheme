@@ -29,7 +29,10 @@ def cdr(l):
         else: raise TypeError("You cannot ask for the cdr of the empty list.")
     else: raise TypeError("You cannot ask for the cdr of the Non-List type.")
 
-def cons(atom, list):
+def cdr():
+    return lambda l: l[1:] if type(l) == _type_list and len(l) > 0 else (TypeError("You cannot ask for the cdr of the empty list.") if len(l) <= 0 else TypeError("You cannot ask for the cdr of the Non-List type."))
+
+def cons(s, list):
     """The Law of Cons
     The primitive ``cons`` takes two arguments.
     The second argument to ``cons`` must be a list.
@@ -37,7 +40,7 @@ def cons(atom, list):
     """
     if type(list) != _type_list:
         raise TypeError("The second argument of cons must be list.")
-    list.insert(0, atom)
+    list.insert(0, s)
     return list
 
 def null(l):
