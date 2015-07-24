@@ -178,3 +178,130 @@ for multiplying 1 does not change the value of a multiplication.
 When building a value with ``cons``,
 always consider [] for the value of the termination line.
 """
+
+def tupAdd(tup1, tup2):
+    if null(tup1) and null(tup2):
+        return []
+    else:
+        return cons(add(car(tup1), car(tup2)), tupAdd(cdr(tup1), cdr(tup2)))
+
+def length(lat):
+    if null(lat):
+        return 0
+    else:
+        return add1(length(cdr(lat)))
+
+def pick(n, lat):
+    if null(lat) or zero(n):
+        return None
+    elif n == 1:
+        return car(lat)
+    else:
+        return pick(sub1(n), cdr(lat))
+
+def rempick(n, lat):
+    if null(lat) or zero(n):
+        return lat
+    elif n == 1:
+        return cdr(lat)
+    else:
+        return cons(car(lat), rempick(sub1(n), cdr(lat)))
+
+def number(n):
+    return type(n) == _type_int
+
+def non_nums(lat):
+    if null(lat):
+        return lat
+    elif number(car(lat)):
+        return non_nums(cdr(lat))
+    else:
+        return cons(car(lat), non_nums(cdr(lat)))
+
+def eqan(n, m):
+    if number(n) and number(m):
+        return n == m
+    elif number(n) or number(m):
+        return False
+    else:
+        return eq(n, m)
+
+def occur(a, lat):
+    if null(lat):
+        return 0
+    elif eqan(a, car(lat)):
+        return add1(occur(a, cdr(lat)))
+    else:
+        return occur(a, cdr(lat))
+
+def rember_star(a, l):
+    if null(l):
+        return l
+    elif atom(car(l)):
+        if eqan(a, car(l)):
+            return rember_star(a, cdr(l))
+        else:
+            return cons(car(l), rember_star(a, cdr(l)))
+    else:
+        return cons(rember_star(a, car(l)), rember_star(a, cdr(l)))
+
+def insertR_star(new, old, l):
+    if null(l):
+        return l
+    elif atom(car(l)):
+        if eqan(old, car(l)):
+            return cons(car(l), cons(new, insertR_star(new, old, cdr(l))))
+        else:
+            return cons(car(l), insertR_star(new, old, cdr(l)))
+    else:
+        return cons(insertR_star(new, old, car(l)), insertR_star(new, old, cdr(l)))
+
+"""The First Commandment
+(final version)
+When recuring on a list of atoms, lat, ask two questions about it:
+``null(lat)`` and else.
+When recuring on a number, n, ask two questions about it:
+``zero(n)`` and else.
+When recuring on a list of S-expressions, l, ask three questions about it:
+``null(l)``, ``atom(car(l))``, and else.
+"""
+
+"""The Fourth Commandment
+(final version)
+Always change at least one argument at recurring.
+When recurring on a list of atoms, lat, using ``cdr(lat)``.
+When recurring on a number, n, using ``sub1(n)``.
+And when recurring on a list of S-expressions, l, use ``car(l)``
+and ``cdr(l)`` if neither ``null(l)`` nor ``atom(car(l))`` are true.
+
+It must be changed to be closer to termination.
+The changing argument must be tested in termination condition:
+when using ``cdr``, test termination with ``null``.
+when using ``sub1``, test termination with ``zero``.
+"""
+
+def occur_star(a, l):
+    if null(l):
+        return 0
+    elif atom(car(l)):
+        if eqan(a, car(l)):
+            return add1(occur_star(a, cdr(l)))
+        else:
+            return occur_star(a, cdr(l))
+    else:
+        return add(occur_star(a, car(l)), occur_star(a, cdr(l)))
+
+def eqlist(l1, l2):
+    if null(l1) and null(l2):
+        return True
+    elif null(l1) or null(l2):
+        return False
+    elif atom(car(l1)) and atom(car(l2)):
+        if eqan(car(l1), car(l2)):
+            return eqlist(cdr(l1), cdr(l2))
+        else:
+            return False
+    elif atom(car(l1)) or atom(car(l2)):
+        return False
+    else:
+        return eqlist(car(l1), car(l2)) and eqlist(cdr(l1), cdr(l2))
