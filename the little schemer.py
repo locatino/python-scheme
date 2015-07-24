@@ -17,8 +17,6 @@ def car(l):
 
 def car():
     return lambda l: l[0] if type(l) == _type_list and len(l) > 0 else (TypeError("You cannot ask for the car of the empty list.") if len(l) <= 0 else TypeError("You cannot ask for the car of the Non-List type."))
-car = car()
-
 
 def cdr(l):
     """The Law of Cdr
@@ -413,14 +411,26 @@ def makeset(lat):
 def first(l):
     return car(l)
 
+def first():
+    return lambda l: car(l)
+
 def second(l):
     return car(cdr(l))
+
+def second():
+    return lambda l: car(cdr(l))
 
 def build(s1, s2):
     return cons(s1, cons(s2, []))
 
+def build():
+    return lambda s1, s2: cons(s1, cons(s2, []))
+
 def fun(lat):
     return set(firsts(lat))
+
+def fun():
+    return lambda: set(firsts(lat))
 
 def revrel(lat):
     if null(lat):
@@ -428,13 +438,22 @@ def revrel(lat):
     else:
         return cons(build(second(car(lat)), first(car(lat))), revrel(cdr(lat)))
 
+def revrel():
+    return lambda lat: lat if null(lat) else cons(build(second(car(lat)), first(car(lat))), revrel(cdr(lat)))
+
 def fullfun(lat):
     return set(seconds(lat))
 
-def one_to_one(lat):
-    return fun(revrel(lat))
+def fullfun():
+    return lambda: set(seconds(lat))
 
-def rember_f_(test, a, l):
+def one_to_one(lat):
+    return fun(revrel()(lat))
+
+def one_to_one():
+    return lambda lat: fun(revrel(lat))
+
+def rember_f(test, a, l):
     if null(l):
         return l
     elif test(a, car(l)):
@@ -443,8 +462,9 @@ def rember_f_(test, a, l):
         return cons(car(l), rember_f(test, a, cdr(l)))
 
 def rember_f(test):
-    return lambda a, l:l if null(l) else (cdr(l) if test(car(l), a) else cons(car(l), rember_f(test)(a, cdr(l))))
+    return lambda a, l: l if null(l) else (cdr(l) if test(car(l), a) else cons(car(l), rember_f(test)(a, cdr(l))))
 
 def rember_f():
-    return lambda test: lambda a, l:l if null(l) else (cdr(l) if test(car(l), a) else cons(car(l), rember_f(test)(a, cdr(l))))
-rember_f = rember_f()
+    return lambda test: lambda a, l:l if null(l) else (cdr(l) if test(car(l), a) else cons(car(l), rember_f()(test)(a, cdr(l))))
+
+print(rember_f()(equal)(1,[2,2,3,4,1]))
