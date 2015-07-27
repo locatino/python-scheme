@@ -564,3 +564,23 @@ def _rember_f(test, a, l):
 
 def rember_f():
     return lambda test: lambda a, l: l if null()(l) else (cdr()(l) if test(car()(l), a) else cons()(car()(l), rember_f()(test)(a, cdr()(l))))
+
+"""The Ninth Commandment
+Abstract common patterns with a new function.
+"""
+# A collector is sometines called a "continuation".
+
+def _multirember_co(a, lat, col):
+    if _null(lat):
+        return col([], [])
+    elif _eq(_car(lat), a):
+        return _multirember_co(a, _cdr(lat), lambda newlat, seen: col(newlat, _cons(_car(lat), seen)))
+    else:
+        return _multirember_co(a, _cdr(lat), lambda newlat, seen: col(_cons(_car(lat), newlat), seen))
+
+def multirember_co():
+    return lambda a, lat, col: col([], []) if null()(lat) else (multirember_co()(a, cdr()(lat), lambda newlat, seen: col(newlat, cons()(car()(lat), seen))) if eq()(car()(lat), a) else multirember_co()(a, cdr()(lat), lambda newlat, seen: col(cons()(car()(lat), newlat), seen)))
+
+"""The Tenth Commandment
+Build functions to collect more than one value at a time.
+"""
