@@ -1,10 +1,4 @@
 import sys
-from enum import Enum
-
-
-
-
-_type_string = type("")
 
 source_path = sys.argv[1]
 
