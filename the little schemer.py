@@ -54,7 +54,7 @@ def _null(l):
         if len(l) > 0:
             return False
         return True
-    else: raise TypeError("You cannot ask for the car of the empty list.")
+    else: raise TypeError("You cannot ask for the null of the empty list.")
 
 def null():
     return lambda l: False if type(l) == _type_list and len(l) > 0 else (True if type(l) == _type_list and len(l) <= 0 else TypeError("You cannot ask for the car of the empty list."))
@@ -584,3 +584,92 @@ def multirember_co():
 """The Tenth Commandment
 Build functions to collect more than one value at a time.
 """
+
+def _even(n):
+    return int(n / 2) * 2 == n
+
+def even():
+    return lambda n: int(n / 2) * 2 == n
+
+def _evens_only(l):
+    if _null(l):
+        return l
+    elif _atom(_car(l)):
+        if _even(_car(l)):
+            return _cons(_car(l), _evens_only(_cdr(l)))
+        else:
+            return _evens_only(_cdr(l))
+    else:
+        return _cons(_evens_only(_car(l)), _evens_only(_cdr(l)))
+
+def evens_only():
+    return lambda l: l if null()(l) else (cons()(car()(l), evens_only()(cdr()(l))) if atom()(car()(l)) and even()(car()(l)) else (evens_only()(cdr()(l)) if atom()(car()(l)) and not even()(car()(l)) else cons()(evens_only()(car()(l)), evens_only()(cdr()(l)))))
+
+def _evens_only_co(l, col):
+    if _null(l):
+        return col([], 1, 0)
+    elif _atom(_car(l)):
+        if _even(_car(l)):
+            return _evens_only_co(_cdr(l),
+            lambda newl, p, s: col(_cons(_car(l), newl), (_car(l) * p), s))
+        else:
+            return _evens_only_co(_cdr(l),
+            lambda newl, p, s: col(newl, p, (_car(l) + s)))
+    else:
+            return _evens_only_co(_car(l),
+            lambda fl, fp, fs: _evens_only_co(_cdr(l),
+            lambda dl, dp, ds: col(_cons(fl, dl), (fp * dp), (fs + ds))))
+
+def _a_pair(x):
+    if _atom(x) or _null(x) or _null(_cdr(x)) or not _null(_cdr(_cdr(x))):
+        return False
+    else:
+        return True
+
+def _shift(pair):
+    return _build(_first(_first(pair)), _build(_second(_first(pair)), _second(pair)))
+
+def _length_star(pora):
+    if _atom(pora):
+        return 1
+    else:
+        return _length_star(_first(pora)) + _length_star(_second(pora))
+
+def _align(pora):
+    if _atom(pora):
+        return pora
+    elif _a_pair(_first(pora)):
+        return _align(_shift(pora))
+    else:
+        return _build(_first(pora), _align(_second(pora)))
+
+def Lothar_Collatz(n):
+    if n == 1:
+        return 1
+    elif _even(n):
+        return Lothar_Collatz(n / 2)
+    else:
+        return Lothar_Collatz((n * 3) + 1)
+
+def Wilhelm_Ackermann(n, m):
+    if n == 0:
+        return m + 1
+    elif m == 0:
+        return Wilhelm_Ackermann((n - 1), 1)
+    else:
+        return Wilhelm_Ackermann((n - 1), Wilhelm_Ackermann(n, (m - 1)))
+
+def _eternity(x):
+    return _eternity(x)
+
+print((lambda mk_length: mk_length(mk_length))(lambda mk_length: lambda l: 0 if _null(l) else _add1((mk_length(mk_length)(_cdr(l)))))(["apples",[]]))
+
+print((lambda chicken: chicken(chicken))(lambda chicken: lambda l: 0 if _null(l) else chicken(chicken)(_cdr(l)) + 1)([2,1,444,1,2,2,3,4,2]))
+
+# Y-Combinator
+
+get_list_length = (lambda mk_length: mk_length(mk_length)) (lambda mk_length: (lambda length: lambda l: 0 if (lambda l: len(l) == 0)(l) else length((lambda l: l[1:])(l)) + 1) (lambda x: mk_length(mk_length)(x)))
+
+print("length: "+str(get_list_length([1,2,1,444,1,2,2,3,4,2])))
+
+print((lambda mk_length: mk_length(mk_length))(lambda length: lambda l: 0 if _null(l) else length(length)(_cdr(l)) + 1)([1]))
