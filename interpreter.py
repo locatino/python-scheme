@@ -1,5 +1,10 @@
 import sys
 
+
+
+
+_type_string = type("")
+
 source_path = sys.argv[1]
 
 source_file = open(source_path).read().strip()
@@ -65,9 +70,9 @@ def proprocessor(f):
 
 @proprocessor
 @preprocessor
-def cons(s, list):
-    list.insert(0, s)
-    return list
+def cons(s, l):
+    l.insert(0, s)
+    return l
 
 @proprocessor
 @preprocessor
@@ -142,13 +147,13 @@ def Const(e, table):
     elif eq(e, "True") or eq(e, "False"):
         return e
     else:
-        return build("primitve", e)
+        return build("primitive", e)
 
 def Quote(e, table):
     return car(cdr(e))
 
 def initial_table(name):
-    return car("()")
+    return "()"
 
 def Identifier(e, table):
     return lookup_in_table(e, table, initial_table)
@@ -177,7 +182,7 @@ def atom_to_action(e):
         return Identifier
 
 def list_to_action(e):
-    if atom(e):
+    if atom(car(e)):
         if eq(car(e), "quote"):
             return Quote
         elif eq(car(e), "lambda"):
@@ -211,4 +216,69 @@ cond_lines_of = cdr
 def Cond(e, table):
     return evcon(cond_lines_of(e), table)
 
-print(Cond("(cond (coffee klatsch) (else party))","(((coffee) (True)) ((klatsch party) (5 (6))))"))
+def evlis(args, table):
+    if null(args):
+        return "()"
+    else:
+        return cons(meaning(car(args), table), evlis(cdr(args), table))
+
+function_of = car
+arguments_of = cdr
+
+def primitive(e):
+    return eq(first(e), "primitive")
+
+def non_primitive(e):
+    return eq(first(e), "non-primitive")
+
+def _atom(e):
+    if atom(e):
+        return True
+    elif null(e):
+        return False
+    elif eq(car(e), "primitive") or eq(car(e), "non-primitive"):
+        return True
+    else:
+        return False
+
+def apply_primitive(name, vals):
+    if eq(name, "cons"):
+        return cons(first(vals), second(vals))
+    elif eq(name, "car"):
+        return car(first(vals))
+    elif eq(name,"cdr"):
+        return cdr(first(vals))
+    elif eq(name,"null"):
+        return null(first(vals))
+    elif eq(name,"eq"):
+        return eq(first(vals), second(vals))
+    elif eq(name,"atom"):
+        return _atom(first(vals))
+    elif eq(name,"zero"):
+        return zero(first(vals))
+    elif eq(name,"add1"):
+        return add1(first(vals))
+    elif eq(name,"sub1"):
+        return sub1(first(vals))
+    elif eq(name,"number"):
+        return number(first(vals))
+
+new_entry = build
+extend_table = cons
+
+def apply_closure(closure, vals):
+    return meaning(body_of(closure), extend_table(new_entry(formals_of(closure), vals), table_of(closure)))
+
+def apply(fun, vals):
+    if primitive(fun):
+        return apply_primitive(second(fun), vals)
+    elif non_primitive(fun):
+        return apply_closure(second(fun), vals)
+
+def Application(e, table):
+    return apply(meaning(function_of(e), table), evlis(arguments_of(e), table))
+
+def value(e):
+    return meaning(e, "()")
+
+print("value: " + str(value("((lambda (y) (((lambda (y) (lambda (x) (add1 2))) 3) 0)) 4))")))
