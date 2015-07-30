@@ -1,14 +1,3 @@
-import sys
-
-
-
-
-_type_string = type("")
-
-source_path = sys.argv[1]
-
-source_file = open(source_path).read().strip()
-
 def StoList(s):
     if s[0] != "(":
         if s.isdigit():
